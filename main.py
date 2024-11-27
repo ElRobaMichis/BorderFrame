@@ -827,8 +827,18 @@ class ProcessWorker(QThread):
 
             # Load and process image using PIL directly
             with Image.open(image_path) as img:
-                # Convert to RGB if necessary
+                # Preserve ICC profile if it exists
+                icc_profile = img.info.get('icc_profile')
+                
+                # Convert to RGB if necessary, using better conversion
                 if img.mode in ('RGBA', 'LA'):
+                    background = Image.new('RGB', img.size, border_color)
+                    if img.mode == 'RGBA':
+                        background.paste(img, mask=img.split()[3])  # Use alpha channel as mask
+                    else:
+                        background.paste(img, mask=img.split()[1])  # Use alpha channel as mask
+                    img = background
+                elif img.mode != 'RGB':
                     img = img.convert('RGB')
 
                 # Calculate new dimensions
@@ -877,15 +887,25 @@ class ProcessWorker(QThread):
                         pass
 
                 # Save with appropriate format and quality
+                save_args = {'format': save_format}
+                
+                if icc_profile:
+                    save_args['icc_profile'] = icc_profile
+                    
                 if save_format == "JPEG":
-                    result.save(output_path, format=save_format, quality=quality, exif=exif_bytes, optimize=True)
+                    save_args.update({
+                        'quality': quality,
+                        'exif': exif_bytes,
+                        'optimize': True,
+                        'subsampling': 0  # Disable chroma subsampling
+                    })
                 elif save_format == "HEIF":
-                    result.save(output_path, format="HEIF", quality=quality)
+                    save_args.update({'quality': quality})
                 elif save_format == "PNG":
-                    result.save(output_path, format=save_format, optimize=True)
-                else:
-                    result.save(output_path, format=save_format)
-
+                    save_args.update({'optimize': True})
+                    
+                result.save(output_path, **save_args)
+                
                 return None
 
         except Exception as e:
