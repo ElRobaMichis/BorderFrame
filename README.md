@@ -1,5 +1,3 @@
-A professional Windows application for batch processing images with customizable borders and aspect ratios. Perfect for social media content creators, photographers, and anyone needing consistent image formatting.
-
 ## Features
 
 - Modern and intuitive graphical user interface
