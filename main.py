@@ -153,7 +153,7 @@ class ThumbnailDialog(QDialog):
         return frame
 
     def update_thumbnails(self):
-        # Block signals during update
+        # Disable widget updates during refresh
         self.container.setUpdatesEnabled(False)
         
         # Clear existing thumbnails
@@ -189,7 +189,7 @@ class ThumbnailDialog(QDialog):
 
     def delete_image(self, index):
         if 0 <= index < len(self.images):
-            # Block signals during update
+            # Disable widget updates during refresh
             self.container.setUpdatesEnabled(False)
             
             image_path = self.images[index]
