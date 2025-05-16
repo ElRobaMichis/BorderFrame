@@ -1,18 +1,32 @@
 import sys
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QFileDialog, 
-                           QVBoxLayout, QHBoxLayout, QWidget, QLabel, QComboBox,
-                           QSlider, QColorDialog, QScrollArea, QGridLayout, QLineEdit,
-                           QFrame, QSizePolicy, QCheckBox, QProgressDialog,
-                           QMessageBox, QDialog)
-from PyQt5.QtCore import Qt, QTimer, QSize, QThread, pyqtSignal, QObject
-from PyQt5.QtGui import QPixmap, QImage, QPainter, QColor, QIntValidator, QFont
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QPushButton,
+    QFileDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QWidget,
+    QLabel,
+    QComboBox,
+    QSlider,
+    QColorDialog,
+    QScrollArea,
+    QGridLayout,
+    QLineEdit,
+    QFrame,
+    QCheckBox,
+    QProgressDialog,
+    QMessageBox,
+    QDialog,
+)
+from PyQt5.QtCore import Qt, QTimer, QSize, QThread, pyqtSignal
+from PyQt5.QtGui import QPixmap, QPainter, QColor, QIntValidator, QFont
 import os
 from PIL import Image
 from PIL.ExifTags import TAGS
 import piexif
 import concurrent.futures
-from io import BytesIO
-import numpy as np
 
 class ThumbnailDialog(QDialog):
     def __init__(self, parent=None, images=None):
@@ -515,7 +529,7 @@ class ImageProcessor(QMainWindow):
             self,
             "Select Images",
             "",
-            "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"
+            "Image Files (*.png *.jpg *.jpeg *.bmp *.gif *.tiff *.heif)"
         )
         if files:
             self.selected_images.extend(files)
@@ -528,7 +542,15 @@ class ImageProcessor(QMainWindow):
         if folder:
             for root, _, files in os.walk(folder):
                 for file in files:
-                    if file.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+                    if file.lower().endswith((
+                        '.png',
+                        '.jpg',
+                        '.jpeg',
+                        '.bmp',
+                        '.gif',
+                        '.tiff',
+                        '.heif',
+                    )):
                         self.selected_images.append(os.path.join(root, file))
             if self.selected_images:
                 self.current_preview_index = len(self.selected_images) - 1
