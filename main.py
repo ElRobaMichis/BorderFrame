@@ -511,11 +511,12 @@ class ImageProcessor(QMainWindow):
         """)
 
     def add_images(self):
+        # Supported extensions: PNG, JPG, JPEG, BMP, GIF, TIFF, TIF, HEIF, HEIC
         files, _ = QFileDialog.getOpenFileNames(
             self,
             "Select Images",
             "",
-            "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"
+            "Image Files (*.png *.jpg *.jpeg *.bmp *.gif *.tiff *.tif *.heif *.heic)"
         )
         if files:
             self.selected_images.extend(files)
@@ -528,7 +529,7 @@ class ImageProcessor(QMainWindow):
         if folder:
             for root, _, files in os.walk(folder):
                 for file in files:
-                    if file.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+                    if file.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.tif', '.heif', '.heic')):
                         self.selected_images.append(os.path.join(root, file))
             if self.selected_images:
                 self.current_preview_index = len(self.selected_images) - 1
