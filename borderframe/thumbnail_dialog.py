@@ -11,6 +11,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, QTimer, QSize
 from PyQt5.QtGui import QPixmap
+
+from .utils import load_pixmap
 import os
 
 
@@ -76,7 +78,7 @@ class ThumbnailDialog(QDialog):
         if image_path in self.thumbnail_cache:
             return self.thumbnail_cache[image_path]
 
-        pixmap = QPixmap(image_path)
+        pixmap = load_pixmap(image_path)
         if not pixmap.isNull():
             scaled_pixmap = pixmap.scaled(
                 self.thumbnail_size, Qt.KeepAspectRatio, Qt.SmoothTransformation

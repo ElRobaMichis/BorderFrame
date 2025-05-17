@@ -2,6 +2,10 @@
 
 from typing import Optional, Tuple
 
+from PIL import Image, ImageOps
+from PIL.ImageQt import ImageQt
+from PyQt5.QtGui import QPixmap
+
 
 def calculate_dimensions(img_width: int, img_height: int, border_size: int, aspect_ratio: Optional[Tuple[int, int]]):
     """Calculate new dimensions for adding a border while respecting an optional aspect ratio."""
@@ -24,3 +28,11 @@ def calculate_dimensions(img_width: int, img_height: int, border_size: int, aspe
             new_width = max(new_width, min_width)
 
     return new_width, new_height
+
+
+def load_pixmap(path: str) -> QPixmap:
+    """Load image as QPixmap applying EXIF orientation if present."""
+    with Image.open(path) as img:
+        img = ImageOps.exif_transpose(img)
+        qimage = ImageQt(img.convert("RGBA"))
+        return QPixmap.fromImage(qimage)
