@@ -32,6 +32,7 @@ sys.modules['PyQt5.QtGui'] = qtgui
 pil_module = types.ModuleType('PIL')
 sys.modules['PIL'] = pil_module
 sys.modules['PIL.Image'] = types.ModuleType('PIL.Image')
+sys.modules['PIL.ImageOps'] = types.ModuleType('PIL.ImageOps')
 exif_tags = types.ModuleType('PIL.ExifTags')
 exif_tags.TAGS = {}
 sys.modules['PIL.ExifTags'] = exif_tags

@@ -1,5 +1,20 @@
 from PyQt5.QtWidgets import (
-    QMainWindow, QPushButton, QFileDialog, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QComboBox, QSlider, QColorDialog, QLineEdit, QFrame, QCheckBox, QProgressDialog, QMessageBox
+    QMainWindow,
+    QPushButton,
+    QFileDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QWidget,
+    QLabel,
+    QComboBox,
+    QSlider,
+    QColorDialog,
+    QLineEdit,
+    QFrame,
+    QCheckBox,
+    QProgressDialog,
+    QMessageBox,
+    QScrollArea,
 )
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QIntValidator, QFont
