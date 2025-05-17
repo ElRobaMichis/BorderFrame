@@ -38,7 +38,7 @@ sys.modules['PIL.ExifTags'] = exif_tags
 sys.modules['piexif'] = types.ModuleType('piexif')
 sys.modules['numpy'] = types.ModuleType('numpy')
 
-from main import ImageProcessor
+from borderframe.image_processor import ImageProcessor
 
 
 def get_processor():
