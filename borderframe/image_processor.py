@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QScrollArea,
 )
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QIntValidator, QFont
 import os
 from .thumbnail_dialog import ThumbnailDialog
@@ -87,6 +87,10 @@ class ImageProcessor(QMainWindow):
         self.preview_size = QSize(800, 600)
         # Cache loaded pixmaps to avoid re-reading images from disk
         self.pixmap_cache = {}
+        # Timer for debounced preview loading
+        self.preview_timer = QTimer(self)
+        self.preview_timer.setSingleShot(True)
+        self.preview_timer.timeout.connect(self.load_current_image)
         
         # Main widget and layout
         main_widget = QWidget()
@@ -457,17 +461,21 @@ class ImageProcessor(QMainWindow):
         self.prev_button.setEnabled(self.current_preview_index > 0)
         self.next_button.setEnabled(self.current_preview_index < len(self.selected_images) - 1)
 
+    def schedule_image_load(self):
+        """Start or restart the timer to load the current image."""
+        self.preview_timer.start(50)
+
     def prev_image(self):
         if self.current_preview_index > 0:
             self.current_preview_index -= 1
-            self.load_current_image()
-            self.update_navigation_buttons()
+            self.schedule_image_load()
+        self.update_navigation_buttons()
 
     def next_image(self):
         if self.current_preview_index < len(self.selected_images) - 1:
             self.current_preview_index += 1
-            self.load_current_image()
-            self.update_navigation_buttons()
+            self.schedule_image_load()
+        self.update_navigation_buttons()
 
     def process_images(self):
         if not self.selected_images:
