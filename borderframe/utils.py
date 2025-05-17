@@ -3,8 +3,14 @@
 from typing import Optional, Tuple
 
 from PIL import Image, ImageOps
-from PIL.ImageQt import ImageQt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QImage
+
+try:  # Pillow < 10
+    from PIL.ImageQt import ImageQt  # type: ignore
+    _HAS_IMAGEQT = True
+except Exception:  # pragma: no cover - fallback for newer Pillow versions
+    ImageQt = None  # type: ignore
+    _HAS_IMAGEQT = False
 
 
 def calculate_dimensions(img_width: int, img_height: int, border_size: int, aspect_ratio: Optional[Tuple[int, int]]):
@@ -34,5 +40,10 @@ def load_pixmap(path: str) -> QPixmap:
     """Load image as QPixmap applying EXIF orientation if present."""
     with Image.open(path) as img:
         img = ImageOps.exif_transpose(img)
-        qimage = ImageQt(img.convert("RGBA"))
+        rgba = img.convert("RGBA")
+        if _HAS_IMAGEQT:
+            qimage = ImageQt(rgba)  # type: ignore[misc]
+        else:  # pragma: no cover - fallback when ImageQt is unavailable
+            data = rgba.tobytes("raw", "RGBA")
+            qimage = QImage(data, rgba.width, rgba.height, QImage.Format_RGBA8888)
         return QPixmap.fromImage(qimage)
