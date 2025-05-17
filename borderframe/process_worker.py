@@ -8,7 +8,11 @@ from .utils import calculate_dimensions
 
 
 class ProcessWorker(QThread):
-    """Thread worker that processes a list of images."""
+    """Thread worker that processes a list of images.
+
+    The number of worker threads can be limited by setting the
+    ``BORDERFRAME_WORKERS`` environment variable.
+    """
 
     progress = pyqtSignal(int, str)
     finished = pyqtSignal(list)
@@ -20,12 +24,18 @@ class ProcessWorker(QThread):
         self.output_dir = output_dir
         self.settings = settings
         self.should_stop = False
+        env_value = os.environ.get("BORDERFRAME_WORKERS")
+        # Allow optional override of worker count via BORDERFRAME_WORKERS
+        if env_value and env_value.isdigit():
+            self.max_workers = max(1, int(env_value))
+        else:
+            self.max_workers = os.cpu_count() or 1
 
     def run(self):
         errors = []
         try:
-            # Ensure at least one worker to avoid ThreadPoolExecutor ValueError
-            max_workers = max(1, min(os.cpu_count() or 1, len(self.images)))
+            # Limit worker threads to keep the UI responsive
+            max_workers = max(1, min(self.max_workers, len(self.images)))
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = []
