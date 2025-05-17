@@ -23,7 +23,8 @@ class ProcessWorker(QThread):
 
     def run(self):
         errors = []
-        max_workers = min(os.cpu_count() or 1, len(self.images))
+        # Ensure at least one worker to avoid ThreadPoolExecutor ValueError
+        max_workers = max(1, min(os.cpu_count() or 1, len(self.images)))
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = []
@@ -53,6 +54,8 @@ class ProcessWorker(QThread):
 
     def process_single_image(self, image_path, index, total):
         try:
+            if self.should_stop:
+                return None
             base_filename = self.settings['base_filename']
             aspect_ratio = self.settings['aspect_ratio']
             border_size = self.settings['border_size']
