@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QThread, pyqtSignal
-from PIL import Image
+from PIL import Image, ImageOps
 import piexif
 import os
 import concurrent.futures
@@ -75,14 +75,21 @@ class ProcessWorker(QThread):
                     img = img.convert('RGB')
 
                 orig_width, orig_height = img.size
-                new_width, new_height = calculate_dimensions(
+                target_width, target_height = calculate_dimensions(
                     orig_width, orig_height, border_size, aspect_ratio
                 )
 
-                result = Image.new('RGB', (new_width, new_height), border_color)
-                paste_x = (new_width - orig_width) // 2
-                paste_y = (new_height - orig_height) // 2
-                result.paste(img, (paste_x, paste_y))
+                if border_size > 0:
+                    img = ImageOps.expand(img, border=border_size, fill=border_color)
+
+                current_width, current_height = img.size
+                if (target_width, target_height) != (current_width, current_height):
+                    result = Image.new('RGB', (target_width, target_height), border_color)
+                    paste_x = (target_width - current_width) // 2
+                    paste_y = (target_height - current_height) // 2
+                    result.paste(img, (paste_x, paste_y))
+                else:
+                    result = img
 
                 if base_filename:
                     if total > 1:
