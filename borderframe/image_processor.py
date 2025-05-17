@@ -70,6 +70,8 @@ class ImageProcessor(QMainWindow):
         self.current_preview_index = 0
         self.current_pixmap = None
         self.preview_size = QSize(800, 600)
+        # Cache loaded pixmaps to avoid re-reading images from disk
+        self.pixmap_cache = {}
         
         # Main widget and layout
         main_widget = QWidget()
@@ -346,7 +348,14 @@ class ImageProcessor(QMainWindow):
     def load_current_image(self):
         if 0 <= self.current_preview_index < len(self.selected_images):
             try:
-                self.current_pixmap = QPixmap(self.selected_images[self.current_preview_index])
+                image_path = self.selected_images[self.current_preview_index]
+                if image_path in self.pixmap_cache:
+                    self.current_pixmap = self.pixmap_cache[image_path]
+                else:
+                    pixmap = QPixmap(image_path)
+                    if not pixmap.isNull():
+                        self.pixmap_cache[image_path] = pixmap
+                    self.current_pixmap = pixmap
                 self.update_preview()
             except Exception as e:
                 print(f"Error loading image: {e}")
@@ -355,11 +364,20 @@ class ImageProcessor(QMainWindow):
     def update_preview(self):
         if not self.current_pixmap:
             return
-            
+
+        # Skip complex processing when no border or aspect ratio adjustment is needed
+        aspect_ratio = self.aspect_ratios[self.aspect_combo.currentText()]
+        border_size = self.border_slider.value()
+        if border_size == 0 and aspect_ratio is None:
+            scaled = self.current_pixmap.scaled(
+                self.preview_label.size(),
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation,
+            )
+            self.preview_label.setPixmap(scaled)
+            return
+
         try:
-            # Get current settings
-            aspect_ratio = self.aspect_ratios[self.aspect_combo.currentText()]
-            border_size = self.border_slider.value()
             
             # Calculate new dimensions based on original image size
             orig_width = self.current_pixmap.width()
@@ -398,10 +416,15 @@ class ImageProcessor(QMainWindow):
             
         if 0 <= self.current_preview_index < len(self.selected_images):
             image_path = self.selected_images[self.current_preview_index]
-            pixmap = QPixmap(image_path)
-            if not pixmap.isNull():
-                self.current_pixmap = pixmap
+            if image_path in self.pixmap_cache:
+                self.current_pixmap = self.pixmap_cache[image_path]
                 self.update_preview()
+            else:
+                pixmap = QPixmap(image_path)
+                if not pixmap.isNull():
+                    self.pixmap_cache[image_path] = pixmap
+                    self.current_pixmap = pixmap
+                    self.update_preview()
         else:
             self.preview_label.clear()
             self.preview_label.setText("No image to preview")
