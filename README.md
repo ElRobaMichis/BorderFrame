@@ -83,3 +83,5 @@ python main.py
 - GPS and location metadata can be optionally preserved
 - Progress bar shows real-time processing status for batch operations
 - Memory-efficient processing allows for large batches of images
+- The ``BORDERFRAME_WORKERS`` environment variable can limit the
+  number of concurrent worker threads during processing
