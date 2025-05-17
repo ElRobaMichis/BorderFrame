@@ -21,7 +21,7 @@ from PyQt5.QtGui import QPixmap, QPainter, QColor, QIntValidator, QFont
 import os
 from .thumbnail_dialog import ThumbnailDialog
 from .process_worker import ProcessWorker
-from .utils import calculate_dimensions
+from .utils import calculate_dimensions, load_pixmap
 
 
 class ImageProcessor(QMainWindow):
@@ -367,9 +367,13 @@ class ImageProcessor(QMainWindow):
                 if image_path in self.pixmap_cache:
                     self.current_pixmap = self.pixmap_cache[image_path]
                 else:
-                    pixmap = QPixmap(image_path)
+                    pixmap = load_pixmap(image_path)
                     if pixmap.isNull():
-                        QMessageBox.warning(self, "Load Error", f"Unable to load {os.path.basename(image_path)}")
+                        QMessageBox.warning(
+                            self,
+                            "Load Error",
+                            f"Unable to load {os.path.basename(image_path)}",
+                        )
                         self.current_pixmap = None
                         return
                     self.pixmap_cache[image_path] = pixmap
@@ -438,7 +442,7 @@ class ImageProcessor(QMainWindow):
                 self.current_pixmap = self.pixmap_cache[image_path]
                 self.update_preview()
             else:
-                pixmap = QPixmap(image_path)
+                pixmap = load_pixmap(image_path)
                 if not pixmap.isNull():
                     self.pixmap_cache[image_path] = pixmap
                     self.current_pixmap = pixmap

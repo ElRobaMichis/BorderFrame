@@ -69,6 +69,7 @@ class ProcessWorker(QThread):
             border_color = self.settings['border_color']
 
             with Image.open(image_path) as img:
+                img = ImageOps.exif_transpose(img)
                 icc_profile = img.info.get('icc_profile')
 
                 if img.mode in ('RGBA', 'LA'):
