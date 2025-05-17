@@ -23,34 +23,38 @@ class ProcessWorker(QThread):
 
     def run(self):
         errors = []
-        # Ensure at least one worker to avoid ThreadPoolExecutor ValueError
-        max_workers = max(1, min(os.cpu_count() or 1, len(self.images)))
+        try:
+            # Ensure at least one worker to avoid ThreadPoolExecutor ValueError
+            max_workers = max(1, min(os.cpu_count() or 1, len(self.images)))
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = []
-            for i, image_path in enumerate(self.images):
-                if self.should_stop:
-                    break
-                future = executor.submit(
-                    self.process_single_image,
-                    image_path,
-                    i,
-                    len(self.images),
-                )
-                futures.append(future)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = []
+                for i, image_path in enumerate(self.images):
+                    if self.should_stop:
+                        break
+                    future = executor.submit(
+                        self.process_single_image,
+                        image_path,
+                        i,
+                        len(self.images),
+                    )
+                    futures.append(future)
 
-            for i, future in enumerate(concurrent.futures.as_completed(futures)):
-                if self.should_stop:
-                    break
-                try:
-                    error = future.result()
-                    if error:
-                        errors.append(error)
-                except Exception as e:
-                    errors.append(f"Unexpected error: {str(e)}")
-                self.progress.emit(i + 1, f"Processed {i + 1} of {len(self.images)} images")
+                for i, future in enumerate(concurrent.futures.as_completed(futures)):
+                    if self.should_stop:
+                        break
+                    try:
+                        error = future.result()
+                        if error:
+                            errors.append(error)
+                    except Exception as e:
+                        errors.append(f"Unexpected error: {str(e)}")
+                    self.progress.emit(i + 1, f"Processed {i + 1} of {len(self.images)} images")
 
-        self.finished.emit(errors)
+        except Exception as e:
+            errors.append(f"Unexpected error: {str(e)}")
+        finally:
+            self.finished.emit(errors)
 
     def process_single_image(self, image_path, index, total):
         try:

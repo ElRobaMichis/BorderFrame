@@ -353,12 +353,15 @@ class ImageProcessor(QMainWindow):
                     self.current_pixmap = self.pixmap_cache[image_path]
                 else:
                     pixmap = QPixmap(image_path)
-                    if not pixmap.isNull():
-                        self.pixmap_cache[image_path] = pixmap
+                    if pixmap.isNull():
+                        QMessageBox.warning(self, "Load Error", f"Unable to load {os.path.basename(image_path)}")
+                        self.current_pixmap = None
+                        return
+                    self.pixmap_cache[image_path] = pixmap
                     self.current_pixmap = pixmap
                 self.update_preview()
             except Exception as e:
-                print(f"Error loading image: {e}")
+                QMessageBox.warning(self, "Load Error", f"Error loading image: {e}")
                 self.current_pixmap = None
 
     def update_preview(self):
