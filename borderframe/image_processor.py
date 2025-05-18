@@ -197,6 +197,7 @@ class ImageProcessor(QMainWindow):
         
         self.format_combo = QComboBox()
         self.save_formats = {
+            "Select format...": (None, None),
             "JPEG (80% quality)": ("JPEG", 80),
             "JPEG (95% quality)": ("JPEG", 95),
             "JPEG (100% quality)": ("JPEG", 100),
@@ -207,6 +208,7 @@ class ImageProcessor(QMainWindow):
             "HEIF (100% quality)": ("HEIF", 100)
         }
         self.format_combo.addItems(self.save_formats.keys())
+        self.format_combo.setCurrentIndex(0)
         self.format_combo.setToolTip("Select the output image format and quality")
         output_section.addWidget(self.format_combo)
         
@@ -296,9 +298,10 @@ class ImageProcessor(QMainWindow):
         self.prev_button.clicked.connect(self.prev_image)
         self.next_button.clicked.connect(self.next_image)
         self.process_button.clicked.connect(self.process_images)
-        
+
         # Update initial state
         self.update_navigation_buttons()
+        self.update_format_default()
 
     def create_section(self, title):
         section = QVBoxLayout()
@@ -319,6 +322,38 @@ class ImageProcessor(QMainWindow):
             }}
         """)
 
+    def update_format_default(self):
+        """Set the save format based on selected image extensions."""
+        if not self.selected_images:
+            self.format_combo.setCurrentIndex(0)
+            return
+
+        extensions = {
+            os.path.splitext(path)[1].lower() for path in self.selected_images
+        }
+
+        if len(extensions) == 1:
+            ext = extensions.pop()
+            if ext in (".jpg", ".jpeg"):
+                target = "JPEG (100% quality)"
+            elif ext == ".png":
+                target = "PNG"
+            elif ext in (".tif", ".tiff"):
+                target = "TIFF"
+            elif ext in (".heif", ".heic"):
+                target = "HEIF (100% quality)"
+            else:
+                self.format_combo.setCurrentIndex(0)
+                return
+
+            index = self.format_combo.findText(target)
+            if index != -1:
+                self.format_combo.setCurrentIndex(index)
+            else:
+                self.format_combo.setCurrentIndex(0)
+        else:
+            self.format_combo.setCurrentIndex(0)
+
     def add_images(self):
         # Supported extensions: PNG, JPG, JPEG, BMP, GIF, TIFF, TIF, HEIF, HEIC
         files, _ = QFileDialog.getOpenFileNames(
@@ -332,6 +367,7 @@ class ImageProcessor(QMainWindow):
             self.current_preview_index = len(self.selected_images) - 1
             self.load_current_image()
             self.update_navigation_buttons()
+            self.update_format_default()
 
     def add_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Folder")
@@ -352,6 +388,7 @@ class ImageProcessor(QMainWindow):
                 self.current_preview_index = len(self.selected_images) - 1
                 self.load_current_image()
                 self.update_navigation_buttons()
+                self.update_format_default()
 
     def select_color(self):
         color = QColorDialog.getColor()
@@ -524,12 +561,18 @@ class ImageProcessor(QMainWindow):
             }
         """)
 
+        # Ensure a valid save format is selected
+        chosen_format = self.save_formats[self.format_combo.currentText()][0]
+        if chosen_format is None:
+            QMessageBox.warning(self, "Save Format", "Please select a save format.")
+            return
+
         # Prepare settings dictionary
         settings = {
             'base_filename': self.save_name.text().strip(),
             'aspect_ratio': self.aspect_ratios[self.aspect_combo.currentText()],
             'border_size': self.border_slider.value(),
-            'save_format': self.save_formats[self.format_combo.currentText()][0],
+            'save_format': chosen_format,
             'quality': self.save_formats[self.format_combo.currentText()][1],
             'preserve_metadata': self.preserve_metadata.isChecked(),
             'border_color': self.border_color
