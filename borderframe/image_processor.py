@@ -733,13 +733,20 @@ class ImageProcessor(QMainWindow):
         progress.setAutoClose(True)
         progress.setStyleSheet(self.progress_styles[self.current_theme])
 
+        # Determine chosen format and quality, defaulting to JPEG if none
+        format_text = self.format_combo.currentText()
+        if format_text in self.save_formats:
+            chosen_format, quality = self.save_formats[format_text]
+        else:
+            chosen_format, quality = "JPEG", 100
+
         # Prepare settings dictionary
         settings = {
             "base_filename": self.save_name.text().strip(),
             "aspect_ratio": self.aspect_ratios[self.aspect_combo.currentText()],
             "border_size": self.border_slider.value(),
             "save_format": chosen_format,
-            "quality": self.save_formats[self.format_combo.currentText()][1],
+            "quality": quality,
             "preserve_metadata": self.preserve_metadata.isChecked(),
             "border_color": self.border_color,
         }
