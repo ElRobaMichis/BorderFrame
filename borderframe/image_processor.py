@@ -796,9 +796,13 @@ class ImageProcessor(QMainWindow):
             error_msg.setStyleSheet(self.msgbox_styles[self.current_theme])
             error_msg.exec_()
         else:
-            QMessageBox.information(
-                self, "Success", "All images processed successfully!"
-            )
+            success_msg = QMessageBox(self)
+            success_msg.setIcon(QMessageBox.Information)
+            success_msg.setWindowTitle("Success")
+            success_msg.setText("All images processed successfully!")
+            success_msg.setStandardButtons(QMessageBox.Ok)
+            success_msg.setStyleSheet(self.msgbox_styles[self.current_theme])
+            success_msg.exec_()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
