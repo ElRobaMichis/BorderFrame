@@ -24,7 +24,7 @@ import os
 CONFIG_PATH = os.path.join(os.path.expanduser("~"), ".borderframe_config.json")
 from .thumbnail_dialog import ThumbnailDialog
 from .process_worker import ProcessWorker
-from .utils import calculate_dimensions, load_pixmap
+from .utils import calculate_dimensions, load_pixmap, BASE_SIZE
 
 
 class ImageProcessor(QMainWindow):
@@ -353,6 +353,8 @@ class ImageProcessor(QMainWindow):
         slider_layout.addWidget(self.border_slider)
         slider_layout.addWidget(self.border_size_input)
         slider_layout.addWidget(QLabel("px"))
+        self.scaled_value_label = QLabel("")
+        slider_layout.addWidget(self.scaled_value_label)
         border_section.addLayout(slider_layout)
 
         # Color picker
@@ -594,9 +596,13 @@ class ImageProcessor(QMainWindow):
             self.update_color_button()
             self.update_preview()
 
-    def calculate_dimensions(self, img_width, img_height, border_size, aspect_ratio):
+    def calculate_dimensions(
+        self, img_width, img_height, border_size, aspect_ratio, user_px=None
+    ):
         """Delegate to the shared utility implementation."""
-        return calculate_dimensions(img_width, img_height, border_size, aspect_ratio)
+        return calculate_dimensions(
+            img_width, img_height, border_size, aspect_ratio, user_px
+        )
 
     def load_current_image(self):
         if 0 <= self.current_preview_index < len(self.selected_images):
@@ -627,14 +633,15 @@ class ImageProcessor(QMainWindow):
 
         # Skip complex processing when no border or aspect ratio adjustment is needed
         aspect_ratio = self.aspect_ratios[self.aspect_combo.currentText()]
-        border_size = self.border_slider.value()
-        if border_size == 0 and aspect_ratio is None:
+        user_px = self.border_slider.value()
+        if user_px == 0 and aspect_ratio is None:
             scaled = self.current_pixmap.scaled(
                 self.preview_label.size(),
                 Qt.KeepAspectRatio,
                 Qt.SmoothTransformation,
             )
             self.preview_label.setPixmap(scaled)
+            self.scaled_value_label.setText("")
             return
 
         try:
@@ -642,8 +649,15 @@ class ImageProcessor(QMainWindow):
             # Calculate new dimensions based on original image size
             orig_width = self.current_pixmap.width()
             orig_height = self.current_pixmap.height()
+            scaled_border = int(
+                user_px * min(orig_width, orig_height) / BASE_SIZE
+            )
             new_width, new_height = self.calculate_dimensions(
-                orig_width, orig_height, border_size, aspect_ratio
+                orig_width,
+                orig_height,
+                user_px,
+                aspect_ratio,
+                user_px,
             )
 
             # Create new pixmap with border
@@ -662,6 +676,7 @@ class ImageProcessor(QMainWindow):
                 self.preview_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
             self.preview_label.setPixmap(scaled)
+            self.scaled_value_label.setText(f"\u2192 {scaled_border} px")
 
         except Exception as e:
             print(f"Error updating preview: {e}")
@@ -744,7 +759,7 @@ class ImageProcessor(QMainWindow):
         settings = {
             "base_filename": self.save_name.text().strip(),
             "aspect_ratio": self.aspect_ratios[self.aspect_combo.currentText()],
-            "border_size": self.border_slider.value(),
+            "user_border_px": self.border_slider.value(),
             "save_format": chosen_format,
             "quality": quality,
             "preserve_metadata": self.preserve_metadata.isChecked(),
@@ -794,6 +809,7 @@ class ImageProcessor(QMainWindow):
         self.border_size_input.blockSignals(True)
         self.border_size_input.setText(str(value))
         self.border_size_input.blockSignals(False)
+        self.update_scaled_label(value)
 
     def on_border_size_input(self, text):
         if text:
@@ -803,6 +819,17 @@ class ImageProcessor(QMainWindow):
                     self.border_slider.setValue(value)
             except ValueError:
                 pass
+
+    def update_scaled_label(self, value):
+        if self.current_pixmap:
+            scaled = int(
+                value
+                * min(self.current_pixmap.width(), self.current_pixmap.height())
+                / BASE_SIZE
+            )
+            self.scaled_value_label.setText(f"\u2192 {scaled} px")
+        else:
+            self.scaled_value_label.setText("")
 
     def show_thumbnails(self):
         if not self.selected_images:

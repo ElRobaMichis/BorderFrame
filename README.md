@@ -16,7 +16,9 @@
   - 9:16 (Story)
   - 2:1 (Banner)
 - Border customization:
-  - Adjustable border size (0-300 pixels)
+  - Adjustable border size (0-300 pixels). The value entered is scaled
+    per image so that the perceived width stays consistent across
+    different resolutions.
 - Custom color picker
 - Live preview of changes
 - Optional dark or light theme (choice persists across sessions)
@@ -87,3 +89,5 @@ python main.py
 - Memory-efficient processing allows for large batches of images
 - The ``BORDERFRAME_WORKERS`` environment variable can limit the
   number of concurrent worker threads during processing
+- Border width is scaled using ``scaled = int(user_px * min(width, height) /``
+  ``1000)`` and the resulting value is displayed next to the slider

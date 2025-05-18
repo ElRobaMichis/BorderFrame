@@ -4,7 +4,7 @@ import piexif
 import os
 import concurrent.futures
 
-from .utils import calculate_dimensions
+from .utils import calculate_dimensions, BASE_SIZE
 
 
 class ProcessWorker(QThread):
@@ -72,7 +72,7 @@ class ProcessWorker(QThread):
                 return None
             base_filename = self.settings['base_filename']
             aspect_ratio = self.settings['aspect_ratio']
-            border_size = self.settings['border_size']
+            user_border_px = self.settings['user_border_px']
             save_format = self.settings['save_format']
             quality = self.settings['quality']
             preserve_metadata = self.settings['preserve_metadata']
@@ -93,12 +93,18 @@ class ProcessWorker(QThread):
                     img = img.convert('RGB')
 
                 orig_width, orig_height = img.size
+                scaled_border = int(
+                    user_border_px * min(orig_width, orig_height) / BASE_SIZE
+                )
                 target_width, target_height = calculate_dimensions(
-                    orig_width, orig_height, border_size, aspect_ratio
+                    orig_width,
+                    orig_height,
+                    scaled_border,
+                    aspect_ratio,
                 )
 
-                if border_size > 0:
-                    img = ImageOps.expand(img, border=border_size, fill=border_color)
+                if scaled_border > 0:
+                    img = ImageOps.expand(img, border=scaled_border, fill=border_color)
 
                 current_width, current_height = img.size
                 if (target_width, target_height) != (current_width, current_height):

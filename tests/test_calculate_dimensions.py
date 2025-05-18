@@ -43,6 +43,7 @@ sys.modules['piexif'] = types.ModuleType('piexif')
 sys.modules['numpy'] = types.ModuleType('numpy')
 
 from borderframe.image_processor import ImageProcessor
+from borderframe.utils import BASE_SIZE
 
 
 def get_processor():
@@ -73,3 +74,15 @@ def test_four_by_five_ratio_various_size():
     assert (width1, height1) == (820, 1025)
     width2, height2 = proc.calculate_dimensions(100, 200, 0, (4, 5))
     assert (width2, height2) == (160, 200)
+
+
+def test_scaled_border_rule():
+    proc = get_processor()
+    user_px = 21
+    width, height = proc.calculate_dimensions(7728, 5152, user_px, None, user_px)
+    expected_border = int(user_px * min(7728, 5152) / BASE_SIZE)
+    assert expected_border == 108
+    assert (width, height) == (
+        7728 + expected_border * 2,
+        5152 + expected_border * 2,
+    )
