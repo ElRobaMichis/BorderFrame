@@ -17,8 +17,9 @@
   - 2:1 (Banner)
 - Border customization:
   - Adjustable border size (0-300 pixels)
-  - Custom color picker
-  - Live preview of changes
+- Custom color picker
+- Live preview of changes
+- Optional dark or light theme
 - Advanced options:
   - Optional metadata preservation
   - Custom output filename prefix
@@ -63,6 +64,7 @@ python main.py
    - Select output format and quality
    - Toggle metadata preservation
    - Optional: Add custom filename prefix
+   - Switch between light and dark themes
 
 4. Preview and Process:
    - Use Previous/Next buttons to navigate through images

@@ -29,7 +29,9 @@ class ImageProcessor(QMainWindow):
         super().__init__()
         self.setWindowTitle("Image Border Processor")
         self.setMinimumSize(1200, 800)
-        self.setStyleSheet("""
+        # Style definitions for light and dark themes
+        self.window_styles = {
+            "Light": """
             QMainWindow {
                 background-color: #f0f0f0;
             }
@@ -78,7 +80,166 @@ class ImageProcessor(QMainWindow):
                 border-radius: 4px;
                 background-color: white;
             }
-        """)
+            """,
+            "Dark": """
+            QMainWindow {
+                background-color: #2c3e50;
+            }
+            QLabel {
+                color: #ecf0f1;
+                font-size: 12px;
+            }
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                min-width: 100px;
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+            QPushButton:disabled {
+                background-color: #7f8c8d;
+            }
+            QComboBox {
+                padding: 5px;
+                border: 1px solid #7f8c8d;
+                border-radius: 4px;
+                background-color: #34495e;
+                color: #ecf0f1;
+            }
+            QSlider::groove:horizontal {
+                border: 1px solid #7f8c8d;
+                height: 8px;
+                background: #34495e;
+                margin: 2px 0;
+                border-radius: 4px;
+            }
+            QSlider::handle:horizontal {
+                background: #3498db;
+                border: none;
+                width: 18px;
+                margin: -6px 0;
+                border-radius: 9px;
+            }
+            QLineEdit {
+                padding: 5px;
+                border: 1px solid #7f8c8d;
+                border-radius: 4px;
+                background-color: #34495e;
+                color: #ecf0f1;
+            }
+            """
+        }
+
+        self.panel_styles = {
+            "Light": "QFrame { background-color: white; border-radius: 8px; }",
+            "Dark": "QFrame { background-color: #34495e; border-radius: 8px; }",
+        }
+
+        self.progress_styles = {
+            "Light": """
+            QProgressDialog {
+                background-color: white;
+                border: 1px solid #bdc3c7;
+                border-radius: 4px;
+                padding: 20px;
+            }
+            QProgressBar {
+                border: 1px solid #bdc3c7;
+                border-radius: 4px;
+                text-align: center;
+                padding: 1px;
+                background-color: #f0f0f0;
+            }
+            QProgressBar::chunk {
+                background-color: #3498db;
+                border-radius: 3px;
+            }
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 8px;
+                border-radius: 4px;
+                min-width: 100px;
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+            """,
+            "Dark": """
+            QProgressDialog {
+                background-color: #34495e;
+                border: 1px solid #7f8c8d;
+                border-radius: 4px;
+                padding: 20px;
+            }
+            QProgressBar {
+                border: 1px solid #7f8c8d;
+                border-radius: 4px;
+                text-align: center;
+                padding: 1px;
+                background-color: #2c3e50;
+                color: #ecf0f1;
+            }
+            QProgressBar::chunk {
+                background-color: #3498db;
+                border-radius: 3px;
+            }
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 8px;
+                border-radius: 4px;
+                min-width: 100px;
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+            """
+        }
+
+        self.msgbox_styles = {
+            "Light": """
+                QMessageBox {
+                    background-color: white;
+                }
+                QPushButton {
+                    background-color: #3498db;
+                    color: white;
+                    border: none;
+                    padding: 8px;
+                    border-radius: 4px;
+                    min-width: 100px;
+                }
+                QPushButton:hover {
+                    background-color: #2980b9;
+                }
+            """,
+            "Dark": """
+                QMessageBox {
+                    background-color: #34495e;
+                }
+                QPushButton {
+                    background-color: #3498db;
+                    color: white;
+                    border: none;
+                    padding: 8px;
+                    border-radius: 4px;
+                    min-width: 100px;
+                }
+                QPushButton:hover {
+                    background-color: #2980b9;
+                }
+            """
+        }
+
+        self.current_theme = "Light"
         
         # Store selected images and current preview
         self.selected_images = []
@@ -100,13 +261,13 @@ class ImageProcessor(QMainWindow):
         layout.setContentsMargins(20, 20, 20, 20)
         
         # Left panel for controls
-        left_panel = QFrame()
-        left_panel.setFrameStyle(QFrame.StyledPanel)
-        left_panel.setStyleSheet("QFrame { background-color: white; border-radius: 8px; }")
-        left_layout = QVBoxLayout(left_panel)
+        self.left_panel = QFrame()
+        self.left_panel.setFrameStyle(QFrame.StyledPanel)
+        self.left_panel.setStyleSheet(self.panel_styles[self.current_theme])
+        left_layout = QVBoxLayout(self.left_panel)
         left_layout.setSpacing(15)
         left_layout.setContentsMargins(20, 20, 20, 20)
-        left_panel.setFixedWidth(320)
+        self.left_panel.setFixedWidth(320)
         
         # Image Management Section
         img_section = self.create_section("Image Management")
@@ -224,6 +385,16 @@ class ImageProcessor(QMainWindow):
         self.save_name.setPlaceholderText("Enter file name prefix")
         self.save_name.setToolTip("Add a prefix to processed image filenames")
         output_section.addWidget(self.save_name)
+
+        theme_label = QLabel("Theme:")
+        theme_label.setFont(QFont("", weight=QFont.Bold))
+        output_section.addWidget(theme_label)
+
+        self.theme_combo = QComboBox()
+        self.theme_combo.addItems(["Light", "Dark"])
+        self.theme_combo.setToolTip("Choose interface theme")
+        self.theme_combo.currentIndexChanged.connect(self.change_theme)
+        output_section.addWidget(self.theme_combo)
         
         # Process button
         self.process_button = QPushButton("Process Images")
@@ -255,15 +426,10 @@ class ImageProcessor(QMainWindow):
         left_layout.addStretch()
         
         # Right panel for preview
-        right_panel = QFrame()
-        right_panel.setFrameStyle(QFrame.StyledPanel)
-        right_panel.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border-radius: 8px;
-            }
-        """)
-        right_layout = QVBoxLayout(right_panel)
+        self.right_panel = QFrame()
+        self.right_panel.setFrameStyle(QFrame.StyledPanel)
+        self.right_panel.setStyleSheet(self.panel_styles[self.current_theme])
+        right_layout = QVBoxLayout(self.right_panel)
         right_layout.setContentsMargins(20, 20, 20, 20)
         
         preview_label = QLabel("Preview")
@@ -282,8 +448,8 @@ class ImageProcessor(QMainWindow):
         right_layout.addWidget(scroll_area)
         
         # Add panels to main layout
-        layout.addWidget(left_panel)
-        layout.addWidget(right_panel, stretch=1)
+        layout.addWidget(self.left_panel)
+        layout.addWidget(self.right_panel, stretch=1)
         
         # Connect signals
         self.add_button.clicked.connect(self.add_images)
@@ -296,9 +462,10 @@ class ImageProcessor(QMainWindow):
         self.prev_button.clicked.connect(self.prev_image)
         self.next_button.clicked.connect(self.next_image)
         self.process_button.clicked.connect(self.process_images)
-        
+
         # Update initial state
         self.update_navigation_buttons()
+        self.apply_styles()
 
     def create_section(self, title):
         section = QVBoxLayout()
@@ -308,10 +475,11 @@ class ImageProcessor(QMainWindow):
         return section
 
     def update_color_button(self):
+        border_col = "#bdc3c7" if self.current_theme == "Light" else "#7f8c8d"
         self.color_button.setStyleSheet(f"""
             QPushButton {{
                 background-color: {self.border_color};
-                border: 2px solid #bdc3c7;
+                border: 2px solid {border_col};
                 min-width: 100px;
             }}
             QPushButton:hover {{
@@ -493,36 +661,7 @@ class ImageProcessor(QMainWindow):
         progress.setWindowModality(Qt.WindowModal)
         progress.setMinimumDuration(0)
         progress.setAutoClose(True)
-        progress.setStyleSheet("""
-            QProgressDialog {
-                background-color: white;
-                border: 1px solid #bdc3c7;
-                border-radius: 4px;
-                padding: 20px;
-            }
-            QProgressBar {
-                border: 1px solid #bdc3c7;
-                border-radius: 4px;
-                text-align: center;
-                padding: 1px;
-                background-color: #f0f0f0;
-            }
-            QProgressBar::chunk {
-                background-color: #3498db;
-                border-radius: 3px;
-            }
-            QPushButton {
-                background-color: #3498db;
-                color: white;
-                border: none;
-                padding: 8px;
-                border-radius: 4px;
-                min-width: 100px;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-        """)
+        progress.setStyleSheet(self.progress_styles[self.current_theme])
 
         # Prepare settings dictionary
         settings = {
@@ -558,22 +697,7 @@ class ImageProcessor(QMainWindow):
             error_msg.setText(f"Completed with {len(errors)} error(s):")
             error_msg.setDetailedText("\n".join(errors))
             error_msg.setStandardButtons(QMessageBox.Ok)
-            error_msg.setStyleSheet("""
-                QMessageBox {
-                    background-color: white;
-                }
-                QPushButton {
-                    background-color: #3498db;
-                    color: white;
-                    border: none;
-                    padding: 8px;
-                    border-radius: 4px;
-                    min-width: 100px;
-                }
-                QPushButton:hover {
-                    background-color: #2980b9;
-                }
-            """)
+            error_msg.setStyleSheet(self.msgbox_styles[self.current_theme])
             error_msg.exec_()
         else:
             QMessageBox.information(self, "Success", "All images processed successfully!")
@@ -601,7 +725,18 @@ class ImageProcessor(QMainWindow):
         if not self.selected_images:
             QMessageBox.information(self, "No Images", "Please add some images first.")
             return
-            
+
         self.thumbnail_dialog = ThumbnailDialog(self, self.selected_images)
         self.thumbnail_dialog.show()
+
+    def change_theme(self):
+        self.current_theme = self.theme_combo.currentText()
+        self.apply_styles()
+
+    def apply_styles(self):
+        self.setStyleSheet(self.window_styles[self.current_theme])
+        if hasattr(self, "left_panel"):
+            self.left_panel.setStyleSheet(self.panel_styles[self.current_theme])
+        if hasattr(self, "right_panel"):
+            self.right_panel.setStyleSheet(self.panel_styles[self.current_theme])
 
