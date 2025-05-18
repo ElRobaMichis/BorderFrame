@@ -46,6 +46,7 @@
 ```bash
 pip install -r requirements.txt
 ```
+4. Advanced users may install `pillow-simd` instead of `Pillow` for improved performance
 
 ## Usage
 
