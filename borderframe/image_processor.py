@@ -252,7 +252,7 @@ class ImageProcessor(QMainWindow):
         self.preview_timer = QTimer(self)
         self.preview_timer.setSingleShot(True)
         self.preview_timer.timeout.connect(self.load_current_image)
-        
+
         # Main widget and layout
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -278,36 +278,40 @@ class ImageProcessor(QMainWindow):
         
         # Image Management Section
         img_section = self.create_section("Image Management")
-        
+
         # Add images button
         self.add_button = QPushButton("Add Images")
-        self.add_button.setIcon(self.style().standardIcon(self.style().SP_FileDialogStart))
+        self.add_button.setIcon(
+            self.style().standardIcon(self.style().SP_FileDialogStart)
+        )
         self.add_button.setToolTip("Select multiple images to process")
         img_section.addWidget(self.add_button)
-        
+
         # Add thumbnail view button
         self.thumbnail_button = QPushButton("Thumbnail View")
-        self.thumbnail_button.setIcon(self.style().standardIcon(self.style().SP_FileDialogContentsView))
+        self.thumbnail_button.setIcon(
+            self.style().standardIcon(self.style().SP_FileDialogContentsView)
+        )
         self.thumbnail_button.setToolTip("Show thumbnails of all imported images")
         self.thumbnail_button.clicked.connect(self.show_thumbnails)
         img_section.addWidget(self.thumbnail_button)
-        
+
         # Add folder button
         self.folder_button = QPushButton("Add Folder")
         self.folder_button.setIcon(self.style().standardIcon(self.style().SP_DirIcon))
         self.folder_button.setToolTip("Select a folder containing images")
         img_section.addWidget(self.folder_button)
-        
+
         left_layout.addLayout(img_section)
-        
+
         # Border Settings Section
         border_section = self.create_section("Border Settings")
-        
+
         # Aspect ratio selector
         aspect_label = QLabel("Aspect Ratio:")
         aspect_label.setFont(QFont("", weight=QFont.Bold))
         border_section.addWidget(aspect_label)
-        
+
         self.aspect_combo = QComboBox()
         self.aspect_ratios = {
             "Original": None,
@@ -315,54 +319,56 @@ class ImageProcessor(QMainWindow):
             "4:5 (Instagram Portrait)": (4, 5),
             "5:4 (Instagram Landscape)": (5, 4),
             "9:16 (Story)": (9, 16),
-            "2:1 (Banner)": (2, 1)
+            "2:1 (Banner)": (2, 1),
         }
         self.aspect_combo.addItems(self.aspect_ratios.keys())
-        self.aspect_combo.setToolTip("Select the desired aspect ratio for the final image")
+        self.aspect_combo.setToolTip(
+            "Select the desired aspect ratio for the final image"
+        )
         border_section.addWidget(self.aspect_combo)
-        
+
         # Border size controls
         size_label = QLabel("Border Size:")
         size_label.setFont(QFont("", weight=QFont.Bold))
         border_section.addWidget(size_label)
-        
+
         slider_layout = QHBoxLayout()
         self.border_slider = QSlider(Qt.Horizontal)
         self.border_slider.setRange(0, 300)
         self.border_slider.setToolTip("Adjust border size")
-        
+
         self.border_size_input = QLineEdit()
         self.border_size_input.setMaximumWidth(60)
         self.border_size_input.setText("0")
         self.border_size_input.setAlignment(Qt.AlignRight)
         self.border_size_input.setValidator(QIntValidator(0, 300))
-        
+
         slider_layout.addWidget(self.border_slider)
         slider_layout.addWidget(self.border_size_input)
         slider_layout.addWidget(QLabel("px"))
         border_section.addLayout(slider_layout)
-        
+
         # Color picker
         color_label = QLabel("Border Color:")
         color_label.setFont(QFont("", weight=QFont.Bold))
         border_section.addWidget(color_label)
-        
+
         self.color_button = QPushButton("Select Color")
         self.color_button.setToolTip("Choose the border color")
         self.border_color = "#FFFFFF"
         self.update_color_button()
         border_section.addWidget(self.color_button)
-        
+
         left_layout.addLayout(border_section)
-        
+
         # Output Settings Section
         output_section = self.create_section("Output Settings")
-        
+
         # Save format selection
         format_label = QLabel("Save Format:")
         format_label.setFont(QFont("", weight=QFont.Bold))
         output_section.addWidget(format_label)
-        
+
         self.format_combo = QComboBox()
         self.format_combo.setMinimumHeight(30)
         self.save_formats = {
@@ -373,22 +379,25 @@ class ImageProcessor(QMainWindow):
             "PNG": ("PNG", None),
             "HEIF (80% quality)": ("HEIF", 80),
             "HEIF (95% quality)": ("HEIF", 95),
-            "HEIF (100% quality)": ("HEIF", 100)
+            "HEIF (100% quality)": ("HEIF", 100),
         }
         self.format_combo.addItems(self.save_formats.keys())
+        self.format_combo.setCurrentIndex(-1)
         self.format_combo.setToolTip("Select the output image format and quality")
         output_section.addWidget(self.format_combo)
-        
+
         # Metadata control
         self.preserve_metadata = QCheckBox("Preserve Location Metadata")
-        self.preserve_metadata.setToolTip("Keep GPS and location information in processed images")
+        self.preserve_metadata.setToolTip(
+            "Keep GPS and location information in processed images"
+        )
         self.preserve_metadata.setChecked(True)  # Default to preserving metadata
         output_section.addWidget(self.preserve_metadata)
-        
+
         name_label = QLabel("Save Name (optional):")
         name_label.setFont(QFont("", weight=QFont.Bold))
         output_section.addWidget(name_label)
-        
+
         self.save_name = QLineEdit()
         self.save_name.setMinimumHeight(30)
         self.save_name.setPlaceholderText("Enter file name prefix")
@@ -418,12 +427,13 @@ class ImageProcessor(QMainWindow):
             QPushButton:hover {
                 background-color: #219a52;
             }
-        """)
+        """
+        )
         self.process_button.setToolTip("Start processing all images")
         output_section.addWidget(self.process_button)
-        
+
         left_layout.addLayout(output_section)
-        
+
         # Navigation Section
         nav_layout = QHBoxLayout()
         self.prev_button = QPushButton("Previous")
@@ -433,31 +443,31 @@ class ImageProcessor(QMainWindow):
         nav_layout.addWidget(self.prev_button)
         nav_layout.addWidget(self.next_button)
         left_layout.addLayout(nav_layout)
-        
+
         left_layout.addStretch()
-        
+
         # Right panel for preview
         self.right_panel = QFrame()
         self.right_panel.setFrameStyle(QFrame.StyledPanel)
         self.right_panel.setStyleSheet(self.panel_styles[self.current_theme])
         right_layout = QVBoxLayout(self.right_panel)
         right_layout.setContentsMargins(20, 20, 20, 20)
-        
+
         preview_label = QLabel("Preview")
         preview_label.setAlignment(Qt.AlignCenter)
         preview_label.setFont(QFont("", weight=QFont.Bold))
         right_layout.addWidget(preview_label)
-        
+
         # Preview label in a scroll area
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setStyleSheet("QScrollArea { border: none; }")
-        
+
         self.preview_label = QLabel()
         self.preview_label.setAlignment(Qt.AlignCenter)
         scroll_area.setWidget(self.preview_label)
         right_layout.addWidget(scroll_area)
-        
+
         # Add panels to main layout
         layout.addWidget(self.left_panel)
         layout.addWidget(self.right_panel, stretch=1)
@@ -496,7 +506,40 @@ class ImageProcessor(QMainWindow):
             QPushButton:hover {{
                 border: 2px solid #95a5a6;
             }}
-        """)
+        """
+        )
+
+    def update_format_default(self):
+        """Set the save format based on selected image extensions."""
+        if not self.selected_images:
+            self.format_combo.setCurrentIndex(-1)
+            return
+
+        extensions = {
+            os.path.splitext(path)[1].lower() for path in self.selected_images
+        }
+
+        if len(extensions) == 1:
+            ext = extensions.pop()
+            if ext in (".jpg", ".jpeg"):
+                target = "JPEG (100% quality)"
+            elif ext == ".png":
+                target = "PNG"
+            elif ext in (".tif", ".tiff"):
+                target = "TIFF"
+            elif ext in (".heif", ".heic"):
+                target = "HEIF (100% quality)"
+            else:
+                self.format_combo.setCurrentIndex(-1)
+                return
+
+            index = self.format_combo.findText(target)
+            if index != -1:
+                self.format_combo.setCurrentIndex(index)
+            else:
+                self.format_combo.setCurrentIndex(-1)
+        else:
+            self.format_combo.setCurrentIndex(-1)
 
     def add_images(self):
         # Supported extensions: PNG, JPG, JPEG, BMP, GIF, TIFF, TIF, HEIF, HEIC
@@ -504,33 +547,37 @@ class ImageProcessor(QMainWindow):
             self,
             "Select Images",
             "",
-            "Image Files (*.png *.jpg *.jpeg *.bmp *.gif *.tiff *.heif)"
+            "Image Files (*.png *.jpg *.jpeg *.bmp *.gif *.tiff *.heif)",
         )
         if files:
             self.selected_images.extend(files)
             self.current_preview_index = len(self.selected_images) - 1
             self.load_current_image()
             self.update_navigation_buttons()
+            self.update_format_default()
 
     def add_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Folder")
         if folder:
             for root, _, files in os.walk(folder):
                 for file in files:
-                    if file.lower().endswith((
-                        '.png',
-                        '.jpg',
-                        '.jpeg',
-                        '.bmp',
-                        '.gif',
-                        '.tiff',
-                        '.heif',
-                    )):
+                    if file.lower().endswith(
+                        (
+                            ".png",
+                            ".jpg",
+                            ".jpeg",
+                            ".bmp",
+                            ".gif",
+                            ".tiff",
+                            ".heif",
+                        )
+                    ):
                         self.selected_images.append(os.path.join(root, file))
             if self.selected_images:
                 self.current_preview_index = len(self.selected_images) - 1
                 self.load_current_image()
                 self.update_navigation_buttons()
+                self.update_format_default()
 
     def select_color(self):
         color = QColorDialog.getColor()
@@ -583,31 +630,31 @@ class ImageProcessor(QMainWindow):
             return
 
         try:
-            
+
             # Calculate new dimensions based on original image size
             orig_width = self.current_pixmap.width()
             orig_height = self.current_pixmap.height()
-            new_width, new_height = self.calculate_dimensions(orig_width, orig_height, border_size, aspect_ratio)
-            
+            new_width, new_height = self.calculate_dimensions(
+                orig_width, orig_height, border_size, aspect_ratio
+            )
+
             # Create new pixmap with border
             result = QPixmap(new_width, new_height)
             result.fill(QColor(self.border_color))
-            
+
             # Draw original image in center
             painter = QPainter(result)
             paste_x = (new_width - orig_width) // 2
             paste_y = (new_height - orig_height) // 2
             painter.drawPixmap(paste_x, paste_y, self.current_pixmap)
             painter.end()
-            
+
             # Scale for preview
             scaled = result.scaled(
-                self.preview_label.size(),
-                Qt.KeepAspectRatio,
-                Qt.SmoothTransformation
+                self.preview_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
             self.preview_label.setPixmap(scaled)
-            
+
         except Exception as e:
             print(f"Error updating preview: {e}")
 
@@ -618,7 +665,7 @@ class ImageProcessor(QMainWindow):
             self.preview_label.setText("No images selected")
             self.update_navigation_buttons()
             return
-            
+
         if 0 <= self.current_preview_index < len(self.selected_images):
             image_path = self.selected_images[self.current_preview_index]
             if image_path in self.pixmap_cache:
@@ -633,12 +680,14 @@ class ImageProcessor(QMainWindow):
         else:
             self.preview_label.clear()
             self.preview_label.setText("No image to preview")
-        
+
         self.update_navigation_buttons()
 
     def update_navigation_buttons(self):
         self.prev_button.setEnabled(self.current_preview_index > 0)
-        self.next_button.setEnabled(self.current_preview_index < len(self.selected_images) - 1)
+        self.next_button.setEnabled(
+            self.current_preview_index < len(self.selected_images) - 1
+        )
 
     def schedule_image_load(self):
         """Start or restart the timer to load the current image."""
@@ -665,9 +714,11 @@ class ImageProcessor(QMainWindow):
             return
 
         total_images = len(self.selected_images)
-        
+
         # Create progress dialog
-        progress = QProgressDialog("Processing images...", "Cancel", 0, total_images, self)
+        progress = QProgressDialog(
+            "Processing images...", "Cancel", 0, total_images, self
+        )
         progress.setWindowTitle("Processing Progress")
         progress.setWindowModality(Qt.WindowModal)
         progress.setMinimumDuration(0)
@@ -676,24 +727,28 @@ class ImageProcessor(QMainWindow):
 
         # Prepare settings dictionary
         settings = {
-            'base_filename': self.save_name.text().strip(),
-            'aspect_ratio': self.aspect_ratios[self.aspect_combo.currentText()],
-            'border_size': self.border_slider.value(),
-            'save_format': self.save_formats[self.format_combo.currentText()][0],
-            'quality': self.save_formats[self.format_combo.currentText()][1],
-            'preserve_metadata': self.preserve_metadata.isChecked(),
-            'border_color': self.border_color
+            "base_filename": self.save_name.text().strip(),
+            "aspect_ratio": self.aspect_ratios[self.aspect_combo.currentText()],
+            "border_size": self.border_slider.value(),
+            "save_format": chosen_format,
+            "quality": self.save_formats[self.format_combo.currentText()][1],
+            "preserve_metadata": self.preserve_metadata.isChecked(),
+            "border_color": self.border_color,
         }
 
         # Create and start worker thread
         self.worker = ProcessWorker(self.selected_images, output_dir, settings)
-        self.worker.progress.connect(lambda count, text: self.update_progress(progress, count, text))
+        self.worker.progress.connect(
+            lambda count, text: self.update_progress(progress, count, text)
+        )
         self.worker.finished.connect(lambda errors: self.process_complete(errors))
-        self.worker.error.connect(lambda title, msg: QMessageBox.warning(self, title, msg))
-        
+        self.worker.error.connect(
+            lambda title, msg: QMessageBox.warning(self, title, msg)
+        )
+
         # Connect cancel button
         progress.canceled.connect(self.worker.stop)
-        
+
         self.worker.start()
 
     def update_progress(self, progress_dialog, count, text):
@@ -711,7 +766,9 @@ class ImageProcessor(QMainWindow):
             error_msg.setStyleSheet(self.msgbox_styles[self.current_theme])
             error_msg.exec_()
         else:
-            QMessageBox.information(self, "Success", "All images processed successfully!")
+            QMessageBox.information(
+                self, "Success", "All images processed successfully!"
+            )
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
