@@ -114,6 +114,10 @@ class ImageProcessor(QMainWindow):
                 background-color: #34495e;
                 color: #ecf0f1;
             }
+            QComboBox QAbstractItemView {
+                background-color: #34495e;
+                color: #ecf0f1;
+            }
             QSlider::groove:horizontal {
                 border: 1px solid #7f8c8d;
                 height: 8px;
