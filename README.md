@@ -19,7 +19,7 @@
   - Adjustable border size (0-300 pixels)
 - Custom color picker
 - Live preview of changes
-- Optional dark or light theme
+- Optional dark or light theme (choice persists across sessions)
 - Advanced options:
   - Optional metadata preservation
   - Custom output filename prefix
@@ -64,7 +64,7 @@ python main.py
    - Select output format and quality
    - Toggle metadata preservation
    - Optional: Add custom filename prefix
-   - Switch between light and dark themes
+   - Switch between light and dark themes (your choice is remembered)
 
 4. Preview and Process:
    - Use Previous/Next buttons to navigate through images

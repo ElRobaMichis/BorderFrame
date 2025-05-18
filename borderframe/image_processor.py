@@ -18,7 +18,10 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, QSize, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QIntValidator, QFont
+import json
 import os
+
+CONFIG_PATH = os.path.join(os.path.expanduser("~"), ".borderframe_config.json")
 from .thumbnail_dialog import ThumbnailDialog
 from .process_worker import ProcessWorker
 from .utils import calculate_dimensions, load_pixmap
@@ -239,7 +242,7 @@ class ImageProcessor(QMainWindow):
             """
         }
 
-        self.current_theme = "Light"
+        self.current_theme = self.load_theme()
         
         # Store selected images and current preview
         self.selected_images = []
@@ -411,6 +414,7 @@ class ImageProcessor(QMainWindow):
         self.theme_combo = QComboBox()
         self.theme_combo.setMinimumHeight(30)
         self.theme_combo.addItems(["Light", "Dark"])
+        self.theme_combo.setCurrentText(self.current_theme)
         self.theme_combo.setToolTip("Choose interface theme")
         self.theme_combo.currentIndexChanged.connect(self.change_theme)
         output_section.addWidget(self.theme_combo)
@@ -799,6 +803,7 @@ class ImageProcessor(QMainWindow):
 
     def change_theme(self):
         self.current_theme = self.theme_combo.currentText()
+        self.save_theme()
         self.apply_styles()
 
     def apply_styles(self):
@@ -807,4 +812,22 @@ class ImageProcessor(QMainWindow):
             self.left_frame.setStyleSheet(self.panel_styles[self.current_theme])
         if hasattr(self, "right_panel"):
             self.right_panel.setStyleSheet(self.panel_styles[self.current_theme])
+
+    def load_theme(self) -> str:
+        if os.path.exists(CONFIG_PATH):
+            try:
+                with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict) and "theme" in data:
+                        return data["theme"]
+            except Exception:
+                pass
+        return "Light"
+
+    def save_theme(self) -> None:
+        try:
+            with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+                json.dump({"theme": self.current_theme}, f)
+        except Exception:
+            pass
 
